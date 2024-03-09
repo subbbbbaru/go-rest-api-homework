@@ -85,7 +85,7 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if len(strings.TrimSpace(newTask.ID)) == 0 {
 		log.Print("ошибка получения id")
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Id not found", http.StatusBadRequest)
 		return
 	}
 	tasks[newTask.ID] = newTask
