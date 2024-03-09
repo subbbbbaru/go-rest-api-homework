@@ -98,7 +98,7 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 
 	_, ok := tasks[id]
 	if !ok {
-		http.Error(w, "Bad task id", http.StatusBadRequest)
+		http.Error(w, "Bad task id ", http.StatusBadRequest)
 		return
 	}
 	delete(tasks, id)
