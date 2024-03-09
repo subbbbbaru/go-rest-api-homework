@@ -44,19 +44,30 @@ var tasks = map[string]Task{
 
 // Ниже напишите обработчики для каждого эндпоинта
 func getAllTasks(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	log.Println("запрошен список задач")
 
-	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(tasks)
+	resp, err := json.Marshal(tasks)
 	if err != nil {
 		log.Printf("ошибка кодирования JSON: %s", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	log.Println("запрошен список задач")
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	_, err = w.Write(resp)
+	if err != nil {
+		log.Printf("ошибка отправки ответа JSON: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func getTaskById(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	log.Printf("запрошена задача с id = %s", id)
+
 	task, ok := tasks[id]
 	if !ok {
 		log.Printf("задача с id = %s не найдена", id)
@@ -64,31 +75,38 @@ func getTaskById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(task)
+	resp, err := json.Marshal(task)
 	if err != nil {
 		log.Printf("ошибка кодирования JSON: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	log.Printf("запрошена задача с id = %s", id)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	_, err = w.Write(resp)
+	if err != nil {
+		log.Printf("ошибка отправки ответа JSON: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func addTask(w http.ResponseWriter, r *http.Request) {
 	var newTask Task
+
 	if err := json.NewDecoder(r.Body).Decode(&newTask); err != nil {
 		log.Printf("ошибка декодирования JSON: %s", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	if len(strings.TrimSpace(newTask.ID)) == 0 {
 		log.Print("ошибка получения id")
 		http.Error(w, "Id not found", http.StatusBadRequest)
 		return
 	}
 	tasks[newTask.ID] = newTask
+
 	w.WriteHeader(http.StatusCreated)
 	log.Printf("задача с id = %s добавлена", newTask.ID)
 }
@@ -103,7 +121,6 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 	}
 	delete(tasks, id)
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	log.Printf("задача с id = %s удалена", id)
 }
