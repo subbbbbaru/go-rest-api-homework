@@ -59,8 +59,6 @@ func getAllTasks(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(resp)
 	if err != nil {
 		log.Printf("ошибка отправки ответа JSON: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 }
 
@@ -79,6 +77,7 @@ func getTaskById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("ошибка кодирования JSON: %s", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -86,8 +85,6 @@ func getTaskById(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(resp)
 	if err != nil {
 		log.Printf("ошибка отправки ответа JSON: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 }
 
